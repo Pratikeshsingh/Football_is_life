@@ -9,6 +9,9 @@ flutter_export_environment.sh
 **/Generated.xcconfig
 **/flutter_export_environment.sh
 
+# Node.js
+package-lock.json
+
 # OSX, Linux etc
 .DS_Store
 

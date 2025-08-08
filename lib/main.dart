@@ -12,11 +12,12 @@ class FootballIsLifeApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Football is Life',
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: UpcomingMatchesScreen(),
+      home: const UpcomingMatchesScreen(),
     );
   }
 }
