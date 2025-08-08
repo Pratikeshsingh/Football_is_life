@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../models/match.dart';
+import '../models/user.dart';
 import 'match_detail_screen.dart';
 
 class UpcomingMatchesScreen extends StatelessWidget {
-  const UpcomingMatchesScreen({Key? key}) : super(key: key);
+  final User user;
+  const UpcomingMatchesScreen({Key? key, required this.user}) : super(key: key);
 
   static final List<Match> matches = [
     Match(
@@ -41,22 +43,44 @@ class UpcomingMatchesScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Upcoming Matches'),
       ),
-      body: ListView.builder(
-        itemCount: upcoming.length,
-        itemBuilder: (context, index) {
-          final match = upcoming[index];
-          return ListTile(
-            title: Text(match.title),
-            subtitle: Text('${match.date.toLocal()}'.split(' ')[0]),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => MatchDetailScreen(match: match),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Welcome, ${user.name}',
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
-              );
-            },
-          );
-        },
+                Text(
+                  'Joined on: ${user.joinDate.toLocal().toString().split(' ')[0]}',
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: upcoming.length,
+              itemBuilder: (context, index) {
+                final match = upcoming[index];
+                return ListTile(
+                  title: Text(match.title),
+                  subtitle: Text('${match.date.toLocal()}'.split(' ')[0]),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => MatchDetailScreen(match: match),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
