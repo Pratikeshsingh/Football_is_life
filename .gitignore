@@ -33,6 +33,12 @@ migrate_working_dir/
 .pub/
 /build/
 
+# Node.js
+package-lock.json
+
+# OSX, Linux etc
+.DS_Store
+=======
 # Symbolication related
 app.*.symbols
 

@@ -4,7 +4,7 @@ import '../models/match.dart';
 import 'match_detail_screen.dart';
 
 class UpcomingMatchesScreen extends StatelessWidget {
-  UpcomingMatchesScreen({Key? key}) : super(key: key);
+  const UpcomingMatchesScreen({Key? key}) : super(key: key);
 
   final List<Match> matches = [
     Match(
