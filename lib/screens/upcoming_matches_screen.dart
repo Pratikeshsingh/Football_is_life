@@ -6,7 +6,7 @@ import 'match_detail_screen.dart';
 class UpcomingMatchesScreen extends StatelessWidget {
   const UpcomingMatchesScreen({Key? key}) : super(key: key);
 
-  final List<Match> matches = [
+  static final List<Match> matches = [
     Match(
       id: '1',
       title: 'Friendly Kickoff',
