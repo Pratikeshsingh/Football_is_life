@@ -10,6 +10,7 @@ class MatchDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: const Color(0xFF87CEFA),
         title: Text(match.title),
       ),
       body: Padding(
@@ -21,7 +22,11 @@ class MatchDetailScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Text('Location: ${match.location}'),
             const SizedBox(height: 8),
-            Text('Capacity: ${match.capacity}'),
+            Text('Min Players: ${match.minPlayers}'),
+            const SizedBox(height: 8),
+            Text('Max Players: ${match.capacity}'),
+            const SizedBox(height: 8),
+            Text('Privacy: ${match.isPrivate ? 'Private' : 'Public'}'),
             const SizedBox(height: 8),
             Text('Attendees (${match.attendees.length}/${match.capacity}):'),
             const SizedBox(height: 4),

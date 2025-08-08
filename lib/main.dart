@@ -16,8 +16,8 @@ class MyApp extends StatelessWidget {
       title: 'Football is Life',
       theme: ThemeData(
         colorScheme:
-            ColorScheme.fromSeed(seedColor: const Color(0xFF58CC02)),
-        scaffoldBackgroundColor: const Color(0xFFE4F8D3),
+            ColorScheme.fromSeed(seedColor: const Color(0xFF87CEFA)),
+        scaffoldBackgroundColor: const Color(0xFFE3F2FD),
       ),
       home: const LoginScreen(),
     );
