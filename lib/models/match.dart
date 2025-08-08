@@ -7,6 +7,8 @@ class Match {
   final int capacity;
   final bool isPrivate;
   final List<String> attendees;
+  final List<String> waitlist;
+  final Duration duration;
 
   Match({
     required this.id,
@@ -17,6 +19,8 @@ class Match {
     required this.capacity,
     required this.isPrivate,
     required this.attendees,
+    required this.waitlist,
+    required this.duration,
   });
 
   bool get isUpcoming => date.isAfter(DateTime.now());

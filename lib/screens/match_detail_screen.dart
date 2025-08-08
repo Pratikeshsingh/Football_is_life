@@ -18,7 +18,11 @@ class MatchDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Date: ' + '${match.date.toLocal()}'.split(' ')[0]),
+            Text('Date: '
+                '${match.date.year.toString().padLeft(4, '0')}-${match.date.month.toString().padLeft(2, '0')}-${match.date.day.toString().padLeft(2, '0')}'),
+            const SizedBox(height: 8),
+            Text('Start Time: '
+                '${match.date.hour.toString().padLeft(2, '0')}:${match.date.minute.toString().padLeft(2, '0')}'),
             const SizedBox(height: 8),
             Text('Location: ${match.location}'),
             const SizedBox(height: 8),
@@ -26,16 +30,39 @@ class MatchDetailScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Text('Max Players: ${match.capacity}'),
             const SizedBox(height: 8),
-            Text('Privacy: ${match.isPrivate ? 'Private' : 'Public'}'),
+            RichText(
+              text: TextSpan(
+                text: 'Privacy: ',
+                style: DefaultTextStyle.of(context).style,
+                children: [
+                  TextSpan(
+                    text: match.isPrivate ? 'Private' : 'Public',
+                    style: TextStyle(
+                        color:
+                            match.isPrivate ? Colors.red : Colors.green),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text('Duration: ${match.duration.inMinutes} minutes'),
             const SizedBox(height: 8),
             Text('Attendees (${match.attendees.length}/${match.capacity}):'),
             const SizedBox(height: 4),
             Expanded(
-              child: ListView.builder(
-                itemCount: match.attendees.length,
-                itemBuilder: (context, index) => ListTile(
-                  title: Text(match.attendees[index]),
-                ),
+              child: ListView(
+                children: [
+                  ...match.attendees
+                      .map((a) => ListTile(title: Text(a)))
+                      .toList(),
+                  if (match.waitlist.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text('Waitlist (${match.waitlist.length}):'),
+                    ...match.waitlist
+                        .map((w) => ListTile(title: Text(w)))
+                        .toList(),
+                  ]
+                ],
               ),
             ),
           ],
