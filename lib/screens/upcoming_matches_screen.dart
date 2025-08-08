@@ -88,7 +88,24 @@ class UpcomingMatchesScreen extends StatefulWidget {
   State<UpcomingMatchesScreen> createState() => _UpcomingMatchesScreenState();
 }
 
-class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen> {
+class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _fabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _fabController =
+        AnimationController(vsync: this, duration: const Duration(seconds: 1))
+          ..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _fabController.dispose();
+    super.dispose();
+  }
+
   void _toggleParticipation(Match match) {
     setState(() {
       final name = widget.user.name;
@@ -115,6 +132,9 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen> {
     final maxController = TextEditingController();
     String? selectedLocation;
     bool isPrivate = false;
+    DateTime? selectedDate;
+    TimeOfDay? selectedTime;
+    bool repeatWeekly = false;
     final cities = ['Alkmaar', 'Heiloo', 'Castricum', 'Amsterdam', 'Rotterdam', 'Utrecht'];
 
     showDialog(
@@ -133,11 +153,36 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen> {
                   ),
                   TextField(
                     controller: dateController,
-                    decoration: const InputDecoration(labelText: 'Date (YYYY-MM-DD)'),
+                    readOnly: true,
+                    decoration: const InputDecoration(labelText: 'Date'),
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime.now().add(const Duration(days: 365)),
+                      );
+                      if (picked != null) {
+                        selectedDate = picked;
+                        dateController.text =
+                            picked.toLocal().toString().split(' ')[0];
+                      }
+                    },
                   ),
                   TextField(
                     controller: timeController,
-                    decoration: const InputDecoration(labelText: 'Start Time (HH:MM)'),
+                    readOnly: true,
+                    decoration: const InputDecoration(labelText: 'Start Time'),
+                    onTap: () async {
+                      final picked = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay.now(),
+                      );
+                      if (picked != null) {
+                        selectedTime = picked;
+                        timeController.text = picked.format(context);
+                      }
+                    },
                   ),
                   TextField(
                     controller: durationController,
@@ -175,6 +220,15 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen> {
                       });
                     },
                   ),
+                  CheckboxListTile(
+                    title: const Text('Repeat Weekly'),
+                    value: repeatWeekly,
+                    onChanged: (val) {
+                      setStateDialog(() {
+                        repeatWeekly = val ?? false;
+                      });
+                    },
+                  ),
                 ],
               ),
             ),
@@ -192,27 +246,47 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen> {
                   final minPlayers = int.tryParse(minController.text) ?? 0;
                   final durationMinutes =
                       int.tryParse(durationController.text) ?? 0;
-                  final dateStr = dateController.text;
-                  final timeStr = timeController.text;
-                  final date =
-                      DateTime.tryParse('$dateStr $timeStr') ?? DateTime.now();
+                  if (selectedDate == null || selectedTime == null) {
+                    return;
+                  }
+                  final date = DateTime(selectedDate!.year, selectedDate!.month,
+                      selectedDate!.day, selectedTime!.hour, selectedTime!.minute);
                   if (date.minute % 15 != 0) {
                     return;
                   }
-                  final match = Match(
-                    id: DateTime.now().millisecondsSinceEpoch.toString(),
-                    title: titleController.text,
-                    date: date,
-                    location: selectedLocation ?? cities.first,
-                    minPlayers: minPlayers,
-                    capacity: maxPlayers,
-                    isPrivate: isPrivate,
-                    attendees: [],
-                    waitlist: [],
-                    duration: Duration(minutes: durationMinutes),
-                  );
                   setState(() {
+                    final baseId = DateTime.now().millisecondsSinceEpoch;
+                    final match = Match(
+                      id: baseId.toString(),
+                      title: titleController.text,
+                      date: date,
+                      location: selectedLocation ?? cities.first,
+                      minPlayers: minPlayers,
+                      capacity: maxPlayers,
+                      isPrivate: isPrivate,
+                      attendees: [],
+                      waitlist: [],
+                      duration: Duration(minutes: durationMinutes),
+                    );
                     UpcomingMatchesScreen.matches.add(match);
+                    if (repeatWeekly) {
+                      for (int i = 1; i <= 3; i++) {
+                        UpcomingMatchesScreen.matches.add(
+                          Match(
+                            id: '${baseId}_$i',
+                            title: titleController.text,
+                            date: date.add(Duration(days: 7 * i)),
+                            location: selectedLocation ?? cities.first,
+                            minPlayers: minPlayers,
+                            capacity: maxPlayers,
+                            isPrivate: isPrivate,
+                            attendees: [],
+                            waitlist: [],
+                            duration: Duration(minutes: durationMinutes),
+                          ),
+                        );
+                      }
+                    }
                   });
                   Navigator.of(context).pop();
                 },
@@ -235,111 +309,142 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen> {
         backgroundColor: const Color(0xFF87CEFA),
         title: const Text('Upcoming Matches'),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Welcome, ${widget.user.name}',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                Text(
-                  'Joined on: ${widget.user.joinDate.toLocal().toString().split(' ')[0]}',
-                ),
-              ],
-            ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF2193b0), Color(0xFF6dd5ed)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: upcoming.length,
-              itemBuilder: (context, index) {
-                final match = upcoming[index];
-                final date = match.date.toLocal();
-                final dateStr =
-                    '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} '
-                    '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-                final isPlayer = match.attendees.contains(widget.user.name);
-                final isWaitlisted = match.waitlist.contains(widget.user.name);
-                String buttonText;
-                Color buttonColor = const Color(0xFF87CEFA);
-                if (isPlayer) {
-                  buttonText = 'Withdraw';
-                  buttonColor = Colors.red;
-                } else if (isWaitlisted) {
-                  buttonText = 'Leave Waitlist';
-                  buttonColor = Colors.orange;
-                } else {
-                  buttonText = match.isPrivate ? 'Join Waitlist' : 'Join';
-                }
-                return Card(
-                  color: const Color(0xFFE1F5FE),
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: ListTile(
-                    title: Text(
-                      match.title,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Welcome, ${widget.user.name}',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  Text(
+                    'Joined on: ${widget.user.joinDate.toLocal().toString().split(' ')[0]}',
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: upcoming.length,
+                itemBuilder: (context, index) {
+                  final match = upcoming[index];
+                  final date = match.date.toLocal();
+                  final dateStr =
+                      '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} '
+                      '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+                  final isPlayer = match.attendees.contains(widget.user.name);
+                  final isWaitlisted = match.waitlist.contains(widget.user.name);
+                  String buttonText;
+                  Color buttonColor = const Color(0xFF87CEFA);
+                  if (isPlayer) {
+                    buttonText = 'Withdraw';
+                    buttonColor = Colors.red;
+                  } else if (isWaitlisted) {
+                    buttonText = 'Leave Waitlist';
+                    buttonColor = Colors.orange;
+                  } else {
+                    buttonText = match.isPrivate ? 'Join Waitlist' : 'Join';
+                  }
+                  return TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0, end: 1),
+                    duration: Duration(milliseconds: 500 + index * 100),
+                    builder: (context, value, child) => Opacity(
+                      opacity: value,
+                      child: Transform.translate(
+                        offset: Offset(0, (1 - value) * 20),
+                        child: child,
+                      ),
                     ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('$dateStr @ ${match.location}'),
-                        RichText(
-                          text: TextSpan(
-                            style: Theme.of(context).textTheme.bodyMedium,
-                            children: [
-                              TextSpan(
-                                  text:
-                                      'Players: ${match.attendees.length}/${match.capacity} | '),
-                              TextSpan(
-                                text: match.isPrivate ? 'Private' : 'Public',
-                                style: TextStyle(
-                                    color: match.isPrivate
-                                        ? Colors.red
-                                        : Colors.green),
+                    child: Card(
+                      color: const Color(0xFFE1F5FE),
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      child: ListTile(
+                        leading: const Icon(Icons.sports_soccer),
+                        title: Text(
+                          match.title,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('$dateStr @ ${match.location}'),
+                            RichText(
+                              text: TextSpan(
+                                style: Theme.of(context).textTheme.bodyMedium,
+                                children: [
+                                  TextSpan(
+                                      text:
+                                          'Players: ${match.attendees.length}/${match.capacity} | '),
+                                  TextSpan(
+                                    text: match.isPrivate ? 'Private' : 'Public',
+                                    style: TextStyle(
+                                        color: match.isPrivate
+                                            ? Colors.red
+                                            : Colors.green),
+                                  ),
+                                  TextSpan(
+                                      text:
+                                          ' | Duration: ${match.duration.inMinutes}m'),
+                                ],
                               ),
-                              TextSpan(
-                                  text:
-                                      ' | Duration: ${match.duration.inMinutes}m'),
-                            ],
+                            ),
+                          ],
+                        ),
+                        trailing: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          child: ElevatedButton(
+                            key: ValueKey(buttonText),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: buttonColor,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            onPressed: () => _toggleParticipation(match),
+                            child: Text(buttonText),
                           ),
                         ),
-                      ],
-                    ),
-                    trailing: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: buttonColor,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => MatchDetailScreen(match: match),
+                            ),
+                          );
+                        },
                       ),
-                      onPressed: () => _toggleParticipation(match),
-                      child: Text(buttonText),
                     ),
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => MatchDetailScreen(match: match),
-                        ),
-                      );
-                    },
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showCreateMatchDialog,
-        backgroundColor: const Color(0xFF87CEFA),
-        foregroundColor: Colors.white,
-        label: const Text('Start Game'),
-        icon: const Icon(Icons.add),
+      floatingActionButton: ScaleTransition(
+        scale: Tween(begin: 0.9, end: 1.1).animate(
+          CurvedAnimation(parent: _fabController, curve: Curves.easeInOut),
+        ),
+        child: FloatingActionButton.extended(
+          onPressed: _showCreateMatchDialog,
+          backgroundColor: const Color(0xFF87CEFA),
+          foregroundColor: Colors.white,
+          label: const Text('Start Game'),
+          icon: const Icon(Icons.add),
+        ),
       ),
     );
   }
