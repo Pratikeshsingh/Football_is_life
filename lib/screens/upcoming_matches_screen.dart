@@ -4,7 +4,7 @@ import '../models/match.dart';
 import '../models/user.dart';
 import 'match_detail_screen.dart';
 
-class UpcomingMatchesScreen extends StatelessWidget {
+class UpcomingMatchesScreen extends StatefulWidget {
   final User user;
   const UpcomingMatchesScreen({Key? key, required this.user}) : super(key: key);
 
@@ -20,7 +20,7 @@ class UpcomingMatchesScreen extends StatelessWidget {
     Match(
       id: '2',
       title: 'Championship Qualifier',
-      date: DateTime.now().subtract(const Duration(days: 1)),
+      date: DateTime.now().add(const Duration(days: 2)),
       location: 'City Arena',
       capacity: 100,
       attendees: ['Jordan'],
@@ -33,14 +33,53 @@ class UpcomingMatchesScreen extends StatelessWidget {
       capacity: 1000,
       attendees: ['Dana', 'Lee'],
     ),
+    Match(
+      id: '4',
+      title: 'Morning Practice',
+      date: DateTime.now().add(const Duration(days: 3)),
+      location: 'Community Field',
+      capacity: 20,
+      attendees: ['Morgan', 'Jess'],
+    ),
+    Match(
+      id: '5',
+      title: 'Charity Cup',
+      date: DateTime.now().add(const Duration(days: 4)),
+      location: 'Downtown Pitch',
+      capacity: 30,
+      attendees: ['Luis', 'Tim', 'Hana'],
+    ),
+    Match(
+      id: '6',
+      title: 'Neighborhood League',
+      date: DateTime.now().add(const Duration(days: 5)),
+      location: 'Westside Grounds',
+      capacity: 40,
+      attendees: ['Ariel'],
+    ),
   ];
 
   @override
+  State<UpcomingMatchesScreen> createState() => _UpcomingMatchesScreenState();
+}
+
+class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen> {
+  void _joinMatch(Match match) {
+    setState(() {
+      if (!match.attendees.contains(widget.user.name)) {
+        match.attendees.add(widget.user.name);
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final upcoming =
-        matches.where((m) => m.date.isAfter(DateTime.now())).toList();
+    final upcoming = UpcomingMatchesScreen.matches
+        .where((m) => m.date.isAfter(DateTime.now()))
+        .toList();
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: const Color(0xFF58CC02),
         title: const Text('Upcoming Matches'),
       ),
       body: Column(
@@ -52,11 +91,11 @@ class UpcomingMatchesScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Welcome, ${user.name}',
+                  'Welcome, ${widget.user.name}',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 Text(
-                  'Joined on: ${user.joinDate.toLocal().toString().split(' ')[0]}',
+                  'Joined on: ${widget.user.joinDate.toLocal().toString().split(' ')[0]}',
                 ),
               ],
             ),
@@ -66,16 +105,37 @@ class UpcomingMatchesScreen extends StatelessWidget {
               itemCount: upcoming.length,
               itemBuilder: (context, index) {
                 final match = upcoming[index];
-                return ListTile(
-                  title: Text(match.title),
-                  subtitle: Text('${match.date.toLocal()}'.split(' ')[0]),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => MatchDetailScreen(match: match),
+                return Card(
+                  color: const Color(0xFFCFF3A8),
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: ListTile(
+                    title: Text(
+                      match.title,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(
+                      '${match.date.toLocal()}'.split(' ')[0] +
+                          ' | Players: ${match.attendees.length}/${match.capacity}',
+                    ),
+                    trailing: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF58CC02),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
-                    );
-                  },
+                      onPressed: () => _joinMatch(match),
+                      child: const Text('Join'),
+                    ),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => MatchDetailScreen(match: match),
+                        ),
+                      );
+                    },
+                  ),
                 );
               },
             ),
@@ -85,3 +145,4 @@ class UpcomingMatchesScreen extends StatelessWidget {
     );
   }
 }
+
