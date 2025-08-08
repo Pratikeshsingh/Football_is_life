@@ -8,66 +8,79 @@ class UpcomingMatchesScreen extends StatefulWidget {
   final User user;
   const UpcomingMatchesScreen({Key? key, required this.user}) : super(key: key);
 
+  static final DateTime _now = DateTime.now();
   static final List<Match> matches = [
     Match(
       id: '1',
       title: 'Friendly Kickoff',
-      date: DateTime.now().add(const Duration(days: 1)),
-      location: 'Local Stadium',
+      date: DateTime(_now.year, _now.month, _now.day + 1, 10, 0),
+      location: 'Alkmaar',
       minPlayers: 8,
       capacity: 12,
       isPrivate: false,
       attendees: ['Sam', 'Kim', 'Alex'],
+      waitlist: [],
+      duration: const Duration(minutes: 90),
     ),
     Match(
       id: '2',
       title: 'Championship Qualifier',
-      date: DateTime.now().add(const Duration(days: 2)),
-      location: 'City Arena',
+      date: DateTime(_now.year, _now.month, _now.day + 2, 11, 15),
+      location: 'Heiloo',
       minPlayers: 8,
       capacity: 16,
       isPrivate: true,
       attendees: ['Jordan'],
+      waitlist: [],
+      duration: const Duration(minutes: 90),
     ),
     Match(
       id: '3',
       title: 'Season Finale',
-      date: DateTime.now().add(const Duration(days: 7)),
-      location: 'Grand Arena',
+      date: DateTime(_now.year, _now.month, _now.day + 7, 14, 30),
+      location: 'Castricum',
       minPlayers: 10,
       capacity: 15,
       isPrivate: false,
       attendees: ['Dana', 'Lee'],
+      waitlist: [],
+      duration: const Duration(minutes: 120),
     ),
     Match(
       id: '4',
       title: 'Morning Practice',
-      date: DateTime.now().add(const Duration(days: 3)),
-      location: 'Community Field',
+      date: DateTime(_now.year, _now.month, _now.day + 3, 9, 0),
+      location: 'Amsterdam',
       minPlayers: 6,
       capacity: 10,
       isPrivate: false,
       attendees: ['Morgan', 'Jess'],
+      waitlist: [],
+      duration: const Duration(minutes: 60),
     ),
     Match(
       id: '5',
       title: 'Charity Cup',
-      date: DateTime.now().add(const Duration(days: 4)),
-      location: 'Downtown Pitch',
+      date: DateTime(_now.year, _now.month, _now.day + 4, 16, 45),
+      location: 'Rotterdam',
       minPlayers: 8,
       capacity: 14,
       isPrivate: true,
       attendees: ['Luis', 'Tim', 'Hana'],
+      waitlist: [],
+      duration: const Duration(minutes: 105),
     ),
     Match(
       id: '6',
       title: 'Neighborhood League',
-      date: DateTime.now().add(const Duration(days: 5)),
-      location: 'Westside Grounds',
+      date: DateTime(_now.year, _now.month, _now.day + 5, 12, 0),
+      location: 'Utrecht',
       minPlayers: 8,
       capacity: 13,
       isPrivate: false,
       attendees: ['Ariel'],
+      waitlist: [],
+      duration: const Duration(minutes: 75),
     ),
   ];
 
@@ -76,10 +89,19 @@ class UpcomingMatchesScreen extends StatefulWidget {
 }
 
 class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen> {
-  void _joinMatch(Match match) {
+  void _toggleParticipation(Match match) {
     setState(() {
-      if (!match.attendees.contains(widget.user.name)) {
-        match.attendees.add(widget.user.name);
+      final name = widget.user.name;
+      if (match.attendees.contains(name)) {
+        match.attendees.remove(name);
+      } else if (match.waitlist.contains(name)) {
+        match.waitlist.remove(name);
+      } else {
+        if (match.isPrivate) {
+          match.waitlist.add(name);
+        } else if (match.attendees.length < match.capacity) {
+          match.attendees.add(name);
+        }
       }
     });
   }
@@ -87,10 +109,13 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen> {
   void _showCreateMatchDialog() {
     final titleController = TextEditingController();
     final dateController = TextEditingController();
-    final locationController = TextEditingController();
+    final timeController = TextEditingController();
+    final durationController = TextEditingController();
     final minController = TextEditingController();
     final maxController = TextEditingController();
+    String? selectedLocation;
     bool isPrivate = false;
+    final cities = ['Alkmaar', 'Heiloo', 'Castricum', 'Amsterdam', 'Rotterdam', 'Utrecht'];
 
     showDialog(
       context: context,
@@ -108,23 +133,37 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen> {
                   ),
                   TextField(
                     controller: dateController,
-                    decoration: const InputDecoration(
-                        labelText: 'Date (YYYY-MM-DD HH:MM)'),
+                    decoration: const InputDecoration(labelText: 'Date (YYYY-MM-DD)'),
                   ),
                   TextField(
-                    controller: locationController,
+                    controller: timeController,
+                    decoration: const InputDecoration(labelText: 'Start Time (HH:MM)'),
+                  ),
+                  TextField(
+                    controller: durationController,
+                    decoration: const InputDecoration(labelText: 'Duration (minutes)'),
+                    keyboardType: TextInputType.number,
+                  ),
+                  DropdownButtonFormField<String>(
+                    value: selectedLocation,
+                    items: cities
+                        .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                        .toList(),
+                    onChanged: (val) {
+                      setStateDialog(() {
+                        selectedLocation = val;
+                      });
+                    },
                     decoration: const InputDecoration(labelText: 'Location'),
                   ),
                   TextField(
                     controller: minController,
-                    decoration:
-                        const InputDecoration(labelText: 'Min Players'),
+                    decoration: const InputDecoration(labelText: 'Min Players'),
                     keyboardType: TextInputType.number,
                   ),
                   TextField(
                     controller: maxController,
-                    decoration: const InputDecoration(
-                        labelText: 'Max Players (10-16)'),
+                    decoration: const InputDecoration(labelText: 'Max Players (10-16)'),
                     keyboardType: TextInputType.number,
                   ),
                   SwitchListTile(
@@ -151,19 +190,26 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen> {
                     return;
                   }
                   final minPlayers = int.tryParse(minController.text) ?? 0;
-                  final dateInput = dateController.text;
+                  final durationMinutes =
+                      int.tryParse(durationController.text) ?? 0;
+                  final dateStr = dateController.text;
+                  final timeStr = timeController.text;
                   final date =
-                      DateTime.tryParse(dateInput.replaceFirst(' ', 'T')) ??
-                          DateTime.now();
+                      DateTime.tryParse('$dateStr $timeStr') ?? DateTime.now();
+                  if (date.minute % 15 != 0) {
+                    return;
+                  }
                   final match = Match(
                     id: DateTime.now().millisecondsSinceEpoch.toString(),
                     title: titleController.text,
                     date: date,
-                    location: locationController.text,
+                    location: selectedLocation ?? cities.first,
                     minPlayers: minPlayers,
                     capacity: maxPlayers,
                     isPrivate: isPrivate,
                     attendees: [],
+                    waitlist: [],
+                    duration: Duration(minutes: durationMinutes),
                   );
                   setState(() {
                     UpcomingMatchesScreen.matches.add(match);
@@ -212,6 +258,23 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen> {
               itemCount: upcoming.length,
               itemBuilder: (context, index) {
                 final match = upcoming[index];
+                final date = match.date.toLocal();
+                final dateStr =
+                    '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} '
+                    '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+                final isPlayer = match.attendees.contains(widget.user.name);
+                final isWaitlisted = match.waitlist.contains(widget.user.name);
+                String buttonText;
+                Color buttonColor = const Color(0xFF87CEFA);
+                if (isPlayer) {
+                  buttonText = 'Withdraw';
+                  buttonColor = Colors.red;
+                } else if (isWaitlisted) {
+                  buttonText = 'Leave Waitlist';
+                  buttonColor = Colors.orange;
+                } else {
+                  buttonText = match.isPrivate ? 'Join Waitlist' : 'Join';
+                }
                 return Card(
                   color: const Color(0xFFE1F5FE),
                   margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -220,22 +283,42 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen> {
                       match.title,
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    subtitle: Text(
-                        '${match.date.toLocal()}'.split('.').first +
-                            ' @ ${match.location}\n'
-                            'Players: ${match.attendees.length}/${match.capacity} | '
-                            '${match.isPrivate ? 'Private' : 'Public'}'),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('$dateStr @ ${match.location}'),
+                        RichText(
+                          text: TextSpan(
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            children: [
+                              TextSpan(
+                                  text:
+                                      'Players: ${match.attendees.length}/${match.capacity} | '),
+                              TextSpan(
+                                text: match.isPrivate ? 'Private' : 'Public',
+                                style: TextStyle(
+                                    color: match.isPrivate
+                                        ? Colors.red
+                                        : Colors.green),
+                              ),
+                              TextSpan(
+                                  text:
+                                      ' | Duration: ${match.duration.inMinutes}m'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                     trailing: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF87CEFA),
+                        backgroundColor: buttonColor,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      onPressed: () => _joinMatch(match),
-                      child:
-                          Text(match.isPrivate ? 'Join Waitlist' : 'Join'),
+                      onPressed: () => _toggleParticipation(match),
+                      child: Text(buttonText),
                     ),
                     onTap: () {
                       Navigator.of(context).push(
