@@ -1,14 +1,16 @@
-# Football Is Life
+# football_is_life
 
-Prototype React + Firebase app for organising pickup football games.
+A new Flutter project.
 
-## Features
+## Getting Started
 
-- **Phone number auth** with OTP via Firebase.
-- **Minimal profiles**: display name, optional avatar, role (admin/member), status (regular/guest).
-- **Game management**: create games with title, start time, capacity and state.
-- **RSVP flow** with simple join/leave and waitlist placeholders.
-- **Ground selection rule**: if going \>= 14 players choose Small Pitch else Cage Court.
-- **Upcoming games view** listing all future sessions.
+This project is a starting point for a Flutter application.
 
-This codebase provides a minimal skeleton to start building the full production app described in the specification.
+A few resources to get you started if this is your first Flutter project:
+
+- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
+- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+
+For help getting started with Flutter development, view the
+[online documentation](https://docs.flutter.dev/), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.
