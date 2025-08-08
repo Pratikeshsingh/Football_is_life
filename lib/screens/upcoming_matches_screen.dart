@@ -14,7 +14,9 @@ class UpcomingMatchesScreen extends StatefulWidget {
       title: 'Friendly Kickoff',
       date: DateTime.now().add(const Duration(days: 1)),
       location: 'Local Stadium',
-      capacity: 50,
+      minPlayers: 8,
+      capacity: 12,
+      isPrivate: false,
       attendees: ['Sam', 'Kim', 'Alex'],
     ),
     Match(
@@ -22,7 +24,9 @@ class UpcomingMatchesScreen extends StatefulWidget {
       title: 'Championship Qualifier',
       date: DateTime.now().add(const Duration(days: 2)),
       location: 'City Arena',
-      capacity: 100,
+      minPlayers: 8,
+      capacity: 16,
+      isPrivate: true,
       attendees: ['Jordan'],
     ),
     Match(
@@ -30,7 +34,9 @@ class UpcomingMatchesScreen extends StatefulWidget {
       title: 'Season Finale',
       date: DateTime.now().add(const Duration(days: 7)),
       location: 'Grand Arena',
-      capacity: 1000,
+      minPlayers: 10,
+      capacity: 15,
+      isPrivate: false,
       attendees: ['Dana', 'Lee'],
     ),
     Match(
@@ -38,7 +44,9 @@ class UpcomingMatchesScreen extends StatefulWidget {
       title: 'Morning Practice',
       date: DateTime.now().add(const Duration(days: 3)),
       location: 'Community Field',
-      capacity: 20,
+      minPlayers: 6,
+      capacity: 10,
+      isPrivate: false,
       attendees: ['Morgan', 'Jess'],
     ),
     Match(
@@ -46,7 +54,9 @@ class UpcomingMatchesScreen extends StatefulWidget {
       title: 'Charity Cup',
       date: DateTime.now().add(const Duration(days: 4)),
       location: 'Downtown Pitch',
-      capacity: 30,
+      minPlayers: 8,
+      capacity: 14,
+      isPrivate: true,
       attendees: ['Luis', 'Tim', 'Hana'],
     ),
     Match(
@@ -54,7 +64,9 @@ class UpcomingMatchesScreen extends StatefulWidget {
       title: 'Neighborhood League',
       date: DateTime.now().add(const Duration(days: 5)),
       location: 'Westside Grounds',
-      capacity: 40,
+      minPlayers: 8,
+      capacity: 13,
+      isPrivate: false,
       attendees: ['Ariel'],
     ),
   ];
@@ -72,6 +84,101 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen> {
     });
   }
 
+  void _showCreateMatchDialog() {
+    final titleController = TextEditingController();
+    final dateController = TextEditingController();
+    final locationController = TextEditingController();
+    final minController = TextEditingController();
+    final maxController = TextEditingController();
+    bool isPrivate = false;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, setStateDialog) {
+          return AlertDialog(
+            title: const Text('Start a Game'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: titleController,
+                    decoration: const InputDecoration(labelText: 'Title'),
+                  ),
+                  TextField(
+                    controller: dateController,
+                    decoration: const InputDecoration(
+                        labelText: 'Date (YYYY-MM-DD HH:MM)'),
+                  ),
+                  TextField(
+                    controller: locationController,
+                    decoration: const InputDecoration(labelText: 'Location'),
+                  ),
+                  TextField(
+                    controller: minController,
+                    decoration:
+                        const InputDecoration(labelText: 'Min Players'),
+                    keyboardType: TextInputType.number,
+                  ),
+                  TextField(
+                    controller: maxController,
+                    decoration: const InputDecoration(
+                        labelText: 'Max Players (10-16)'),
+                    keyboardType: TextInputType.number,
+                  ),
+                  SwitchListTile(
+                    title: const Text('Private'),
+                    value: isPrivate,
+                    onChanged: (val) {
+                      setStateDialog(() {
+                        isPrivate = val;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  final maxPlayers = int.tryParse(maxController.text) ?? 0;
+                  if (maxPlayers < 10 || maxPlayers > 16) {
+                    return;
+                  }
+                  final minPlayers = int.tryParse(minController.text) ?? 0;
+                  final dateInput = dateController.text;
+                  final date =
+                      DateTime.tryParse(dateInput.replaceFirst(' ', 'T')) ??
+                          DateTime.now();
+                  final match = Match(
+                    id: DateTime.now().millisecondsSinceEpoch.toString(),
+                    title: titleController.text,
+                    date: date,
+                    location: locationController.text,
+                    minPlayers: minPlayers,
+                    capacity: maxPlayers,
+                    isPrivate: isPrivate,
+                    attendees: [],
+                  );
+                  setState(() {
+                    UpcomingMatchesScreen.matches.add(match);
+                  });
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Create'),
+              ),
+            ],
+          );
+        });
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final upcoming = UpcomingMatchesScreen.matches
@@ -79,7 +186,7 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen> {
         .toList();
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF58CC02),
+        backgroundColor: const Color(0xFF87CEFA),
         title: const Text('Upcoming Matches'),
       ),
       body: Column(
@@ -106,7 +213,7 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen> {
               itemBuilder: (context, index) {
                 final match = upcoming[index];
                 return Card(
-                  color: const Color(0xFFCFF3A8),
+                  color: const Color(0xFFE1F5FE),
                   margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: ListTile(
                     title: Text(
@@ -114,19 +221,21 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen> {
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     subtitle: Text(
-                      '${match.date.toLocal()}'.split(' ')[0] +
-                          ' | Players: ${match.attendees.length}/${match.capacity}',
-                    ),
+                        '${match.date.toLocal()}'.split('.').first +
+                            ' @ ${match.location}\n'
+                            'Players: ${match.attendees.length}/${match.capacity} | '
+                            '${match.isPrivate ? 'Private' : 'Public'}'),
                     trailing: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF58CC02),
+                        backgroundColor: const Color(0xFF87CEFA),
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                       onPressed: () => _joinMatch(match),
-                      child: const Text('Join'),
+                      child:
+                          Text(match.isPrivate ? 'Join Waitlist' : 'Join'),
                     ),
                     onTap: () {
                       Navigator.of(context).push(
@@ -141,6 +250,13 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen> {
             ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _showCreateMatchDialog,
+        backgroundColor: const Color(0xFF87CEFA),
+        foregroundColor: Colors.white,
+        label: const Text('Start Game'),
+        icon: const Icon(Icons.add),
       ),
     );
   }
