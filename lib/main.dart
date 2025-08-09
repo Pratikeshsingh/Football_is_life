@@ -136,15 +136,11 @@ class _OTPSignInScreenState extends State<OTPSignInScreen> {
         token: _otpCtrl.text.trim(),
         type: OtpType.email,
       );
-      // Force a re-check and navigate immediately on success
+      // AuthGate listens to auth changes and will route the user to the
+      // appropriate screen (either [PhoneCaptureScreen] or [HomeScreen]).
+      // Avoid navigating here so the post-login setup screen can appear when
+      // required.
       if (!mounted) return;
-      final user = supa.auth.currentUser;
-      print('user=${supa.auth.currentUser?.id}, session=${supa.auth.currentSession != null}');
-      if (user != null) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-        );
-      }
     } on AuthException catch (e) {
       if (!mounted) return;
       setState(() {
