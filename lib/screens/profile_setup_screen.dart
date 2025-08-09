@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../models/user.dart';
+import '../models/user.dart' as models;
 import 'home_screen.dart';
 
 /// Screen that collects the user's name and phone number after email login.
@@ -41,7 +41,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       setState(() => _saving = false);
     }
 
-    final appUser = User(name: name, phone: phone, joinDate: DateTime.now());
+    final appUser = models.User(
+        name: name, phone: phone, joinDate: DateTime.now());
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (_) => HomeScreen(user: appUser)),
