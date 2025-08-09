@@ -313,10 +313,10 @@ deno_version = 1
 
 [functions]
 [functions.env]
-SMTP_HOST = "env(SMTP_HOST)"
-SMTP_PORT = "env(SMTP_PORT)"
-SMTP_USERNAME = "env(SMTP_USERNAME)"
-SMTP_PASSWORD = "env(SMTP_PASSWORD)"
+# SMTP_HOST = "env(SMTP_HOST)"
+# SMTP_PORT = "env(SMTP_PORT)"
+# SMTP_USERNAME = "env(SMTP_USERNAME)"
+# SMTP_PASSWORD = "env(SMTP_PASSWORD)"
 
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
