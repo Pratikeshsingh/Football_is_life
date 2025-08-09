@@ -136,14 +136,31 @@ class _OTPSignInScreenState extends State<OTPSignInScreen> {
         token: _otpCtrl.text.trim(),
         type: OtpType.email,
       );
-    } catch (_) {
+      // Force a re-check and navigate immediately on success
+      if (!mounted) return;
+      final user = supa.auth.currentUser;
+      print('user=${supa.auth.currentUser?.id}, session=${supa.auth.currentSession != null}');
+      if (user != null) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
+      }
+    } on AuthException catch (e) {
+      if (!mounted) return;
       setState(() {
-        _msg = 'Verification failed.';
+        _msg = 'Verification failed: ${e.message}';
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _msg = 'Verification failed: $e';
       });
     } finally {
-      setState(() {
-        _busy = false;
-      });
+      if (mounted) {
+        setState(() {
+          _busy = false;
+        });
+      }
     }
   }
 
