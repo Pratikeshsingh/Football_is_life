@@ -131,7 +131,10 @@ class _OTPSignInScreenState extends State<OTPSignInScreen> {
       _msg = null;
     });
     try {
-      await supa.auth.verifyOTP(
+      // Use `signInWithOtp` with the provided token to complete the login
+      // process. Using `verifyOTP` here results in a verified token but no
+      // active session which surfaced as an error after the last merge.
+      await supa.auth.signInWithOtp(
         email: _emailCtrl.text.trim(),
         token: _otpCtrl.text.trim(),
         type: OtpType.email,
