@@ -101,14 +101,28 @@ class _OTPSignInScreenState extends State<OTPSignInScreen> {
     });
     try {
       await supa.auth.signInWithOtp(email: _emailCtrl.text.trim());
+      if (!mounted) return;
+      setState(() {
+        _sent = true;
+        _msg = 'Check your email for the 6-digit code.';
+      });
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _msg = 'Failed to send OTP: ${e.message}';
+      });
     } catch (_) {
-      // ignore errors so tests can run offline
+      if (!mounted) return;
+      setState(() {
+        _msg = 'Failed to send OTP.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _busy = false;
+        });
+      }
     }
-    setState(() {
-      _sent = true;
-      _msg = 'Check your email for the 6-digit code.';
-      _busy = false;
-    });
   }
 
   Future<void> _verify() async {

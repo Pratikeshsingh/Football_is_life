@@ -41,13 +41,21 @@ class _LoginScreenState extends State<LoginScreen> {
     if (email.isEmpty) return;
     try {
       await Supabase.instance.client.auth.signInWithOtp(email: email);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Check your email for a login link.')),
+      );
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error sending email: ${e.message}')),
+      );
     } catch (_) {
-      // ignore errors to keep tests offline
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to send email.')),
+      );
     }
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Check your email for a login link.')),
-    );
   }
 
   @override
