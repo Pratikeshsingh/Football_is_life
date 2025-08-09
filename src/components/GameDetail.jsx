@@ -19,12 +19,12 @@ export default function GameDetail({ game, user }) {
   };
 
   return (
-    <div>
+    <div className="bg-white text-black p-4 rounded shadow">
       <GameCard game={game} />
       {isGoing ? (
-        <button onClick={leave} disabled={saving}>Leave</button>
+        <button className="mt-4 px-4 py-2 bg-red-500 text-white rounded" onClick={leave} disabled={saving}>Leave</button>
       ) : (
-        <button onClick={join} disabled={saving}>Join</button>
+        <button className="mt-4 px-4 py-2 bg-green-500 text-white rounded" onClick={join} disabled={saving}>Join</button>
       )}
     </div>
   );
