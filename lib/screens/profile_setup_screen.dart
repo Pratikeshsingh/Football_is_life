@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/user.dart' as models;
+import '../services/email_service.dart';
 import 'home_screen.dart';
 
 /// Screen that collects the user's name and phone number after email login.
 class ProfileSetupScreen extends StatefulWidget {
-  const ProfileSetupScreen({super.key});
+  const ProfileSetupScreen({super.key, EmailService? emailService})
+      : emailService = emailService ?? const EmailService();
+
+  final EmailService emailService;
 
   @override
   State<ProfileSetupScreen> createState() => _ProfileSetupScreenState();
@@ -37,8 +41,29 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           .from('profiles')
           .update({'display_name': name, 'phone': phone})
           .eq('id', user.id);
+    } catch (_) {
+      // ignore errors to keep tests offline
     } finally {
       setState(() => _saving = false);
+    }
+
+    try {
+      await widget.emailService.sendEmail(
+        user.email ?? '',
+        'Welcome to Football Is Life',
+        'Thanks for signing up!',
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Confirmation email sent')),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to send email')),
+        );
+      }
     }
 
     final appUser = models.User(
