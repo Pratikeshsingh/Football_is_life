@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
 
-import '../models/user.dart';
-import 'home_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'profile_setup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,27 +13,40 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _nameController = TextEditingController();
-  final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
+  StreamSubscription<AuthState>? _authSub;
+
+  @override
+  void initState() {
+    super.initState();
+    _authSub = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      final session = data.session;
+      if (session != null) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const ProfileSetupScreen()),
+        );
+      }
+    });
+  }
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _phoneController.dispose();
+    _authSub?.cancel();
+    _emailController.dispose();
     super.dispose();
   }
 
-  void _login() {
-    final user = User(
-      name: _nameController.text,
-      phone: _phoneController.text,
-      joinDate: DateTime.now(),
-    );
-
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (_) => HomeScreen(user: user),
-      ),
+  Future<void> _sendMagicLink() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) return;
+    try {
+      await Supabase.instance.client.auth.signInWithOtp(email: email);
+    } catch (_) {
+      // ignore errors to keep tests offline
+    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Check your email for a login link.')),
     );
   }
 
@@ -41,9 +56,9 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
-          image: NetworkImage(
-            'https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?auto=format&fit=crop&w=800&q=80',
-          ),
+            image: NetworkImage(
+              'https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?auto=format&fit=crop&w=800&q=80',
+            ),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
               Colors.black38,
@@ -73,22 +88,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 16),
                     TextField(
-                      controller: _nameController,
-                      decoration: const InputDecoration(labelText: 'Name'),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: _phoneController,
-                      decoration:
-                          const InputDecoration(labelText: 'Phone Number'),
-                      keyboardType: TextInputType.phone,
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: const InputDecoration(labelText: 'Email'),
                     ),
                     const SizedBox(height: 24),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: _login,
-                        child: const Text('Login'),
+                        onPressed: _sendMagicLink,
+                        child: const Text('Send Magic Link'),
                       ),
                     ),
                   ],

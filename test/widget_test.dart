@@ -4,18 +4,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:football_is_life/main.dart';
 
 void main() {
-  testWidgets('Login and navigate to matches screen', (tester) async {
+  testWidgets('Email login sends magic link', (tester) async {
     await tester.pumpWidget(const MyApp());
 
-    expect(find.text('Login'), findsOneWidget);
+    expect(find.text('Send Magic Link'), findsOneWidget);
 
-    await tester.enterText(find.byType(TextField).at(0), 'Alice');
-    await tester.enterText(find.byType(TextField).at(1), '123456');
+    await tester.enterText(
+        find.byType(TextField).first, 'test@example.com');
+    await tester.tap(find.text('Send Magic Link'));
+    await tester.pump();
 
-    await tester.tap(find.text('Login'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Welcome, Alice'), findsOneWidget);
+    expect(find.text('Check your email for a login link.'), findsOneWidget);
   });
 }
 
