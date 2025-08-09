@@ -137,7 +137,6 @@ class _OTPSignInScreenState extends State<OTPSignInScreen> {
         email: _emailCtrl.text.trim(),
         token: _otpCtrl.text.trim(),
         type: OtpType.email,
-        emailOtpType: EmailOtpType.email,
       );
       // AuthGate listens to auth changes and will route the user to the
       // appropriate screen (either [PhoneCaptureScreen] or [HomeScreen]).
