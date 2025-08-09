@@ -3,6 +3,7 @@ class Match {
   final String title;
   final DateTime date;
   final String location;
+  final String venue;
   final int minPlayers;
   final int capacity;
   final bool isPrivate;
@@ -15,6 +16,7 @@ class Match {
     required this.title,
     required this.date,
     required this.location,
+    required this.venue,
     required this.minPlayers,
     required this.capacity,
     required this.isPrivate,

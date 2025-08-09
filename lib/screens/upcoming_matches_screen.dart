@@ -15,6 +15,7 @@ class UpcomingMatchesScreen extends StatefulWidget {
       title: 'Friendly Kickoff',
       date: DateTime(_now.year, _now.month, _now.day + 1, 10, 0),
       location: 'Alkmaar',
+      venue: 'Alkmaar Community Ground',
       minPlayers: 8,
       capacity: 12,
       isPrivate: false,
@@ -27,6 +28,7 @@ class UpcomingMatchesScreen extends StatefulWidget {
       title: 'Championship Qualifier',
       date: DateTime(_now.year, _now.month, _now.day + 2, 11, 15),
       location: 'Heiloo',
+      venue: 'Heiloo Stadium',
       minPlayers: 8,
       capacity: 16,
       isPrivate: true,
@@ -39,6 +41,7 @@ class UpcomingMatchesScreen extends StatefulWidget {
       title: 'Season Finale',
       date: DateTime(_now.year, _now.month, _now.day + 7, 14, 30),
       location: 'Castricum',
+      venue: 'Castricum Arena',
       minPlayers: 10,
       capacity: 15,
       isPrivate: false,
@@ -51,6 +54,7 @@ class UpcomingMatchesScreen extends StatefulWidget {
       title: 'Morning Practice',
       date: DateTime(_now.year, _now.month, _now.day + 3, 9, 0),
       location: 'Amsterdam',
+      venue: 'Amsterdam Central Park Field',
       minPlayers: 6,
       capacity: 10,
       isPrivate: false,
@@ -63,6 +67,7 @@ class UpcomingMatchesScreen extends StatefulWidget {
       title: 'Charity Cup',
       date: DateTime(_now.year, _now.month, _now.day + 4, 16, 45),
       location: 'Rotterdam',
+      venue: 'Rotterdam Charity Field',
       minPlayers: 8,
       capacity: 14,
       isPrivate: true,
@@ -75,6 +80,7 @@ class UpcomingMatchesScreen extends StatefulWidget {
       title: 'Neighborhood League',
       date: DateTime(_now.year, _now.month, _now.day + 5, 12, 0),
       location: 'Utrecht',
+      venue: 'Utrecht Neighborhood Pitch',
       minPlayers: 8,
       capacity: 13,
       isPrivate: false,
@@ -91,6 +97,15 @@ class UpcomingMatchesScreen extends StatefulWidget {
 class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _fabController;
+  static const List<String> _weekdays = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday'
+  ];
 
   @override
   void initState() {
@@ -130,6 +145,7 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen>
     final durationController = TextEditingController();
     final minController = TextEditingController();
     final maxController = TextEditingController();
+    final venueController = TextEditingController();
     String? selectedLocation;
     bool isPrivate = false;
     DateTime? selectedDate;
@@ -142,7 +158,7 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen>
       builder: (context) {
         return StatefulBuilder(builder: (context, setStateDialog) {
           return AlertDialog(
-            title: const Text('Start a Game'),
+            title: const Text('Create New Match'),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -200,6 +216,10 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen>
                       });
                     },
                     decoration: const InputDecoration(labelText: 'Location'),
+                  ),
+                  TextField(
+                    controller: venueController,
+                    decoration: const InputDecoration(labelText: 'Location Details'),
                   ),
                   TextField(
                     controller: minController,
@@ -261,6 +281,7 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen>
                       title: titleController.text,
                       date: date,
                       location: selectedLocation ?? cities.first,
+                      venue: venueController.text,
                       minPlayers: minPlayers,
                       capacity: maxPlayers,
                       isPrivate: isPrivate,
@@ -277,6 +298,7 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen>
                             title: titleController.text,
                             date: date.add(Duration(days: 7 * i)),
                             location: selectedLocation ?? cities.first,
+                            venue: venueController.text,
                             minPlayers: minPlayers,
                             capacity: maxPlayers,
                             isPrivate: isPrivate,
@@ -344,6 +366,7 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen>
                   final dateStr =
                       '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} '
                       '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+                  final dayName = _weekdays[date.weekday - 1];
                   final isPlayer = match.attendees.contains(widget.user.name);
                   final isWaitlisted = match.waitlist.contains(widget.user.name);
                   String buttonText;
@@ -380,27 +403,30 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen>
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('$dateStr @ ${match.location}'),
-                            RichText(
-                              text: TextSpan(
-                                style: Theme.of(context).textTheme.bodyMedium,
+                            Text('$dayName $dateStr @ ${match.location}'),
+                            const SizedBox(height: 4),
+                            if (!match.isPrivate)
+                              Row(
                                 children: [
-                                  TextSpan(
-                                      text:
-                                          'Players: ${match.attendees.length}/${match.capacity} | '),
-                                  TextSpan(
-                                    text: match.isPrivate ? 'Private' : 'Public',
-                                    style: TextStyle(
-                                        color: match.isPrivate
-                                            ? Colors.red
-                                            : Colors.green),
+                                  Text(
+                                      'Players: ${match.attendees.length}/${match.capacity}'),
+                                  const SizedBox(width: 8),
+                                  Chip(
+                                    label: const Text('Public'),
+                                    backgroundColor: Colors.green.shade100,
+                                    visualDensity: VisualDensity.compact,
                                   ),
-                                  TextSpan(
-                                      text:
-                                          ' | Duration: ${match.duration.inMinutes}m'),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                      'Duration: ${match.duration.inMinutes}m'),
                                 ],
+                              )
+                            else
+                              Chip(
+                                label: const Text('Private'),
+                                backgroundColor: Colors.red.shade100,
+                                visualDensity: VisualDensity.compact,
                               ),
-                            ),
                           ],
                         ),
                         trailing: AnimatedSwitcher(
@@ -421,7 +447,9 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen>
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (_) => MatchDetailScreen(match: match),
+                              builder: (_) => MatchDetailScreen(
+                                  match: match,
+                                  allMatches: UpcomingMatchesScreen.matches),
                             ),
                           );
                         },
@@ -442,7 +470,7 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen>
           onPressed: _showCreateMatchDialog,
           backgroundColor: const Color(0xFF87CEFA),
           foregroundColor: Colors.white,
-          label: const Text('Start Game'),
+          label: const Text('Create New'),
           icon: const Icon(Icons.add),
         ),
       ),
