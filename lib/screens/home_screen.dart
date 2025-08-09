@@ -60,10 +60,10 @@ class _LeaguesTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      appBar: AppBar(title: Text('Your Leagues')),
-      body: Center(
-        child: Text('No leagues yet'),
+    return Scaffold(
+      appBar: AppBar(title: const Text('Your Leagues')),
+      body: const Center(
+        child: const Text('No leagues yet'),
       ),
     );
   }
