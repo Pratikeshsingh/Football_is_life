@@ -91,7 +91,11 @@ class _WelcomeTab extends StatelessWidget {
                     DropdownMenuItem(value: 'Injured', child: Text('Injured')),
                     DropdownMenuItem(value: 'On Vacation', child: Text('On Vacation')),
                   ],
-                  onChanged: onStatusChanged,
+                  onChanged: (String? value) {
+                    if (value != null) {
+                      onStatusChanged(value);
+                    }
+                  },
                 ),
               ],
             ),
