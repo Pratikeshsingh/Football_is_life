@@ -37,58 +37,71 @@ class MatchDetailScreen extends StatelessWidget {
         backgroundColor: const Color(0xFF87CEFA),
         title: Text(match.title),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-                'Date: $dayName ${match.date.year.toString().padLeft(4, '0')}-${match.date.month.toString().padLeft(2, '0')}-${match.date.day.toString().padLeft(2, '0')}'),
-            const SizedBox(height: 8),
-            Text(
-                'Start Time: ${match.date.hour.toString().padLeft(2, '0')}:${match.date.minute.toString().padLeft(2, '0')}'),
-            const SizedBox(height: 8),
-            Text('Location: ${match.venue}'),
-            const SizedBox(height: 8),
-            Text('Min Players: ${match.minPlayers}'),
-            const SizedBox(height: 8),
-            Text('Max Players: ${match.capacity}'),
-            const SizedBox(height: 8),
-            Text('Duration: ${match.duration.inMinutes} minutes'),
-            const SizedBox(height: 8),
-            Text('Attendees (${match.attendees.length}/${match.capacity}):'),
-            const SizedBox(height: 4),
-            Expanded(
-              child: ListView(
-                children: [
-                  ...match.attendees.map((a) => Column(
-                        children: [
-                          ListTile(
-                            leading: CircleAvatar(child: Text(a[0])),
-                            title: Text(a),
-                            onTap: () => _showPlayerDialog(context, a),
-                          ),
-                          const Divider(),
-                        ],
-                      )),
-                  if (match.waitlist.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Text('Waitlist (${match.waitlist.length}):'),
-                    ...match.waitlist.map((w) => Column(
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: NetworkImage(
+                'https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?auto=format&fit=crop&w=800&q=80'),
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(
+              Colors.black38,
+              BlendMode.darken,
+            ),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                  'Date: $dayName ${match.date.year.toString().padLeft(4, '0')}-${match.date.month.toString().padLeft(2, '0')}-${match.date.day.toString().padLeft(2, '0')}'),
+              const SizedBox(height: 8),
+              Text(
+                  'Start Time: ${match.date.hour.toString().padLeft(2, '0')}:${match.date.minute.toString().padLeft(2, '0')}'),
+              const SizedBox(height: 8),
+              Text('Location: ${match.venue}'),
+              const SizedBox(height: 8),
+              Text('Min Players: ${match.minPlayers}'),
+              const SizedBox(height: 8),
+              Text('Max Players: ${match.capacity}'),
+              const SizedBox(height: 8),
+              Text('Duration: ${match.duration.inMinutes} minutes'),
+              const SizedBox(height: 8),
+              Text('Attendees (${match.attendees.length}/${match.capacity}):'),
+              const SizedBox(height: 4),
+              Expanded(
+                child: ListView(
+                  children: [
+                    ...match.attendees.map((a) => Column(
                           children: [
                             ListTile(
-                              leading: CircleAvatar(child: Text(w[0])),
-                              title: Text(w),
-                              onTap: () => _showPlayerDialog(context, w),
+                              leading: CircleAvatar(child: Text(a[0])),
+                              title: Text(a),
+                              onTap: () => _showPlayerDialog(context, a),
                             ),
                             const Divider(),
                           ],
                         )),
-                  ]
-                ],
+                    if (match.waitlist.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text('Waitlist (${match.waitlist.length}):'),
+                      ...match.waitlist.map((w) => Column(
+                            children: [
+                              ListTile(
+                                leading: CircleAvatar(child: Text(w[0])),
+                                title: Text(w),
+                                onTap: () => _showPlayerDialog(context, w),
+                              ),
+                              const Divider(),
+                            ],
+                          )),
+                    ]
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

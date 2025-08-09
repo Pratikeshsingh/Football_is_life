@@ -45,10 +45,23 @@ class _WelcomeTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Home')),
-      body: Center(
-        child: Text(
-          'Welcome, ${user.name}!',
-          style: const TextStyle(fontSize: 24),
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: NetworkImage(
+                'https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?auto=format&fit=crop&w=800&q=80'),
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(
+              Colors.black38,
+              BlendMode.darken,
+            ),
+          ),
+        ),
+        child: Center(
+          child: Text(
+            'Welcome, ${user.name}!',
+            style: const TextStyle(fontSize: 24, color: Colors.white),
+          ),
         ),
       ),
     );
@@ -62,8 +75,24 @@ class _LeaguesTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Your Leagues')),
-      body: const Center(
-        child: const Text('No leagues yet'),
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: NetworkImage(
+                'https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?auto=format&fit=crop&w=800&q=80'),
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(
+              Colors.black38,
+              BlendMode.darken,
+            ),
+          ),
+        ),
+        child: const Center(
+          child: Text(
+            'No leagues yet',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
       ),
     );
   }
