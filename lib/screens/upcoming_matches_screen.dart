@@ -321,11 +321,50 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen>
     );
   }
 
-  @override
+    @override
   Widget build(BuildContext context) {
     final upcoming = UpcomingMatchesScreen.matches
         .where((m) => m.date.isAfter(DateTime.now()))
+        .toList()
+      ..sort((a, b) => a.date.compareTo(b.date));
+    final myMatches = upcoming
+        .where((m) => m.attendees.contains(widget.user.name) || m.waitlist.contains(widget.user.name))
         .toList();
+    final otherMatches = upcoming.where((m) => !myMatches.contains(m)).toList();
+
+    final now = DateTime.now();
+    final weekEnd = now.add(const Duration(days: 7));
+    final monthEnd = DateTime(now.year, now.month + 1, 1);
+
+    final thisWeek = otherMatches.where((m) => m.date.isBefore(weekEnd)).toList();
+    final thisMonth = otherMatches
+        .where((m) => m.date.isBefore(monthEnd) && m.date.isAfter(weekEnd))
+        .toList();
+    final later = otherMatches.where((m) => m.date.isAfter(monthEnd)).toList();
+
+    myMatches.sort((a, b) => a.date.compareTo(b.date));
+    thisWeek.sort((a, b) => a.date.compareTo(b.date));
+    thisMonth.sort((a, b) => a.date.compareTo(b.date));
+    later.sort((a, b) => a.date.compareTo(b.date));
+
+    int animationIndex = 0;
+    List<Widget> buildSection(String title, List<Match> matches) {
+      if (matches.isEmpty) return [];
+      final widgets = <Widget>[
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Text(
+            title,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white),
+          ),
+        ),
+      ];
+      for (final m in matches) {
+        widgets.add(_buildMatchCard(m, animationIndex++));
+      }
+      return widgets;
+    }
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF87CEFA),
@@ -333,14 +372,13 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen>
       ),
       body: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF2193b0), Color(0xFF6dd5ed)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+          image: DecorationImage(
+            image: NetworkImage('https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?auto=format&fit=crop&w=800&q=80'),
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(Colors.black38, BlendMode.darken),
           ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: ListView(
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
@@ -349,117 +387,20 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen>
                 children: [
                   Text(
                     'Welcome, ${widget.user.name}',
-                    style: Theme.of(context).textTheme.titleLarge,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white),
                   ),
                   Text(
                     'Joined on: ${widget.user.joinDate.toLocal().toString().split(' ')[0]}',
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ],
               ),
             ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: upcoming.length,
-                itemBuilder: (context, index) {
-                  final match = upcoming[index];
-                  final date = match.date.toLocal();
-                  final dateStr =
-                      '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} '
-                      '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-                  final dayName = _weekdays[date.weekday - 1];
-                  final isPlayer = match.attendees.contains(widget.user.name);
-                  final isWaitlisted = match.waitlist.contains(widget.user.name);
-                  String buttonText;
-                  Color buttonColor = const Color(0xFF87CEFA);
-                  if (isPlayer) {
-                    buttonText = 'Withdraw';
-                    buttonColor = Colors.red;
-                  } else if (isWaitlisted) {
-                    buttonText = 'Leave Waitlist';
-                    buttonColor = Colors.orange;
-                  } else {
-                    buttonText = match.isPrivate ? 'Join Waitlist' : 'Join';
-                  }
-                  return TweenAnimationBuilder<double>(
-                    tween: Tween(begin: 0, end: 1),
-                    duration: Duration(milliseconds: 500 + index * 100),
-                    builder: (context, value, child) => Opacity(
-                      opacity: value,
-                      child: Transform.translate(
-                        offset: Offset(0, (1 - value) * 20),
-                        child: child,
-                      ),
-                    ),
-                    child: Card(
-                      color: const Color(0xFFE1F5FE),
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
-                      child: ListTile(
-                        leading: const Icon(Icons.sports_soccer),
-                        title: Text(
-                          match.title,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('$dayName $dateStr @ ${match.location}'),
-                            const SizedBox(height: 4),
-                            if (!match.isPrivate)
-                              Wrap(
-                                spacing: 8,
-                                runSpacing: 4,
-                                crossAxisAlignment: WrapCrossAlignment.center,
-                                children: [
-                                  Text(
-                                      'Players: ${match.attendees.length}/${match.capacity}'),
-                                  Chip(
-                                    label: const Text('Public'),
-                                    backgroundColor: Colors.green.shade100,
-                                    visualDensity: VisualDensity.compact,
-                                  ),
-                                  Text(
-                                      'Duration: ${match.duration.inMinutes}m'),
-                                ],
-                              )
-                            else
-                              Chip(
-                                label: const Text('Private'),
-                                backgroundColor: Colors.red.shade100,
-                                visualDensity: VisualDensity.compact,
-                              ),
-                          ],
-                        ),
-                        trailing: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 300),
-                          child: ElevatedButton(
-                            key: ValueKey(buttonText),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: buttonColor,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            onPressed: () => _toggleParticipation(match),
-                            child: Text(buttonText),
-                          ),
-                        ),
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => MatchDetailScreen(
-                                  match: match,
-                                  allMatches: UpcomingMatchesScreen.matches),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
+            ...buildSection('Your Games', myMatches),
+            ...buildSection('This Week', thisWeek),
+            ...buildSection('This Month', thisMonth),
+            ...buildSection('Later', later),
+            const SizedBox(height: 80),
           ],
         ),
       ),
@@ -477,5 +418,100 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen>
       ),
     );
   }
+
+  Widget _buildMatchCard(Match match, int index) {
+    final date = match.date.toLocal();
+    final dateStr =
+        '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} '
+        '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    final dayName = _weekdays[date.weekday - 1];
+    final isPlayer = match.attendees.contains(widget.user.name);
+    final isWaitlisted = match.waitlist.contains(widget.user.name);
+    String buttonText;
+    Color buttonColor = const Color(0xFF87CEFA);
+    if (isPlayer) {
+      buttonText = 'Withdraw';
+      buttonColor = Colors.red;
+    } else if (isWaitlisted) {
+      buttonText = 'Leave Waitlist';
+      buttonColor = Colors.orange;
+    } else {
+      buttonText = match.isPrivate ? 'Join Waitlist' : 'Join';
+    }
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: Duration(milliseconds: 500 + index * 100),
+      builder: (context, value, child) => Opacity(
+        opacity: value,
+        child: Transform.translate(
+          offset: Offset(0, (1 - value) * 20),
+          child: child,
+        ),
+      ),
+      child: Card(
+        color: const Color(0xFFE1F5FE),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: ListTile(
+          leading: const Icon(Icons.sports_soccer),
+          title: Text(
+            match.title,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('$dayName $dateStr @ ${match.location}'),
+              const SizedBox(height: 4),
+              if (!match.isPrivate)
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text('Players: ${match.attendees.length}/${match.capacity}'),
+                    Chip(
+                      label: const Text('Public'),
+                      backgroundColor: Colors.green.shade100,
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    Text('Duration: ${match.duration.inMinutes}m'),
+                  ],
+                )
+              else
+                Chip(
+                  label: const Text('Private'),
+                  backgroundColor: Colors.red.shade100,
+                  visualDensity: VisualDensity.compact,
+                ),
+            ],
+          ),
+          trailing: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: ElevatedButton(
+              key: ValueKey(buttonText),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: buttonColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () => _toggleParticipation(match),
+              child: Text(buttonText),
+            ),
+          ),
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => MatchDetailScreen(
+                    match: match, allMatches: UpcomingMatchesScreen.matches),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
 }
 
