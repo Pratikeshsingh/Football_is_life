@@ -462,22 +462,15 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen>
             children: [
               Text('$dayName $dateStr @ ${match.location}'),
               const SizedBox(height: 4),
-              if (!match.isPrivate)
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 4,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Text('Players: ${match.attendees.length}/${match.capacity}'),
-                    Chip(
-                      label: const Text('Public'),
-                      backgroundColor: Colors.green.shade100,
-                      visualDensity: VisualDensity.compact,
-                    ),
-                    Text('Duration: ${match.duration.inMinutes}m'),
-                  ],
-                )
-              else
+              if (!match.isPrivate) ...[
+                Text('Players: ${match.attendees.length}/${match.capacity}'),
+                Text('Duration: ${match.duration.inMinutes}m'),
+                Chip(
+                  label: const Text('Public'),
+                  backgroundColor: Colors.green.shade100,
+                  visualDensity: VisualDensity.compact,
+                ),
+              ] else
                 Chip(
                   label: const Text('Private'),
                   backgroundColor: Colors.red.shade100,

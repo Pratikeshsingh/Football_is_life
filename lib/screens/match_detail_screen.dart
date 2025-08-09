@@ -38,17 +38,7 @@ class MatchDetailScreen extends StatelessWidget {
         title: Text(match.title),
       ),
       body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: NetworkImage(
-                'https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?auto=format&fit=crop&w=800&q=80'),
-            fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(
-              Colors.black38,
-              BlendMode.darken,
-            ),
-          ),
-        ),
+        color: const Color(0xFFE1F5FE),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
