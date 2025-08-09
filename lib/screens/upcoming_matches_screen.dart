@@ -309,6 +309,8 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen>
                         );
                       }
                     }
+                    UpcomingMatchesScreen.matches
+                        .sort((a, b) => a.date.compareTo(b.date));
                   });
                   Navigator.of(context).pop();
                 },
