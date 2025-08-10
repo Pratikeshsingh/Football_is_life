@@ -6,7 +6,12 @@ import 'match_detail_screen.dart';
 
 class UpcomingMatchesScreen extends StatefulWidget {
   final User user;
-  const UpcomingMatchesScreen({Key? key, required this.user}) : super(key: key);
+  final bool showOnlyOthers;
+  const UpcomingMatchesScreen({
+    Key? key,
+    required this.user,
+    this.showOnlyOthers = false,
+  }) : super(key: key);
 
   static final DateTime _now = DateTime.now();
   static final List<Match> matches = [
@@ -338,7 +343,8 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen>
     final weekEnd = now.add(const Duration(days: 7));
     final monthEnd = DateTime(now.year, now.month + 1, 1);
 
-    final thisWeek = otherMatches.where((m) => m.date.isBefore(weekEnd)).toList();
+    final thisWeek =
+        otherMatches.where((m) => m.date.isBefore(weekEnd)).toList();
     final thisMonth = otherMatches
         .where((m) => m.date.isBefore(monthEnd) && m.date.isAfter(weekEnd))
         .toList();
@@ -354,10 +360,14 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen>
       if (matches.isEmpty) return [];
       final widgets = <Widget>[
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Text(
             title,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white),
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium
+                ?.copyWith(color: Colors.white),
           ),
         ),
       ];
@@ -366,6 +376,37 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen>
       }
       return widgets;
     }
+
+    final children = <Widget>[
+      Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Welcome, ${widget.user.name}',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleLarge
+                  ?.copyWith(color: Colors.white),
+            ),
+            Text(
+              'Joined on: ${widget.user.joinDate.toLocal().toString().split(' ')[0]}',
+              style: const TextStyle(color: Colors.white),
+            ),
+          ],
+        ),
+      ),
+    ];
+
+    if (!widget.showOnlyOthers) {
+      children.addAll(buildSection('Your Games', myMatches));
+    }
+
+    children.addAll(buildSection('This Week', thisWeek));
+    children.addAll(buildSection('This Month', thisMonth));
+    children.addAll(buildSection('Later', later));
+    children.add(const SizedBox(height: 80));
 
     return Scaffold(
       appBar: AppBar(
@@ -380,31 +421,7 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen>
             colorFilter: ColorFilter.mode(Colors.black38, BlendMode.darken),
           ),
         ),
-        child: ListView(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Welcome, ${widget.user.name}',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white),
-                  ),
-                  Text(
-                    'Joined on: ${widget.user.joinDate.toLocal().toString().split(' ')[0]}',
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ],
-              ),
-            ),
-            ...buildSection('Your Games', myMatches),
-            ...buildSection('This Week', thisWeek),
-            ...buildSection('This Month', thisMonth),
-            ...buildSection('Later', later),
-            const SizedBox(height: 80),
-          ],
-        ),
+        child: ListView(children: children),
       ),
       floatingActionButton: ScaleTransition(
         scale: Tween(begin: 0.9, end: 1.1).animate(

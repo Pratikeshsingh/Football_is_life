@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:phone_numbers_parser/phone_numbers_parser.dart';
 
+import 'screens/home_screen.dart';
+import 'models/user.dart' as models;
+
 SupabaseClient get supa => Supabase.instance.client;
 
 Future<void> main() async {
@@ -18,10 +21,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    final demoUser = models.User(
+      name: 'Player',
+      phone: '0000000000',
+      joinDate: DateTime.now(),
+    );
+    return MaterialApp(
       title: 'Football Is Life',
       // home: AuthGate(), // Login temporarily disabled
-      home: HomeScreen(),
+      home: HomeScreen(user: demoUser),
     );
   }
 }
@@ -257,8 +265,16 @@ class _PhoneCaptureScreenState extends State<PhoneCaptureScreen> {
         'phone': e164,
       }).eq('id', uid);
       if (!mounted) return;
-      Navigator.of(context)
-          .pushReplacement(MaterialPageRoute(builder: (_) => const HomeScreen()));
+      final appUser = models.User(
+        name: _nameCtrl.text.trim().isEmpty
+            ? 'Player'
+            : _nameCtrl.text.trim(),
+        phone: e164,
+        joinDate: DateTime.now(),
+      );
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => HomeScreen(user: appUser)),
+      );
     } catch (_) {
       setState(() {
         _err = 'Invalid phone or failed to save.';
@@ -308,29 +324,6 @@ class _PhoneCaptureScreenState extends State<PhoneCaptureScreen> {
               ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final user = supa.auth.currentUser;
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Games'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => supa.auth.signOut(),
-          ),
-        ],
-      ),
-      body: Center(
-        child: Text('Welcome ${user?.email ?? 'Player'}'),
       ),
     );
   }
