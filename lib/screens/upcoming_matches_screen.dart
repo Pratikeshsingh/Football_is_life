@@ -7,10 +7,12 @@ import 'match_detail_screen.dart';
 class UpcomingMatchesScreen extends StatefulWidget {
   final User user;
   final bool showOnlyOthers;
+  final bool embed;
   const UpcomingMatchesScreen({
     Key? key,
     required this.user,
     this.showOnlyOthers = false,
+    this.embed = false,
   }) : super(key: key);
 
   static final DateTime _now = DateTime.now();
@@ -423,6 +425,38 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen>
         ),
         child: ListView(children: children),
       ),
+    ];
+
+    if (!widget.showOnlyOthers) {
+      children.addAll(buildSection('Your Games', myMatches));
+    }
+
+    children.addAll(buildSection('This Week', thisWeek));
+    children.addAll(buildSection('This Month', thisMonth));
+    children.addAll(buildSection('Later', later));
+    children.add(const SizedBox(height: 80));
+
+    final content = Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: NetworkImage('https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?auto=format&fit=crop&w=800&q=80'),
+          fit: BoxFit.cover,
+          colorFilter: ColorFilter.mode(Colors.black38, BlendMode.darken),
+        ),
+      ),
+      child: ListView(children: children),
+    );
+
+    if (widget.embed) {
+      return content;
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF87CEFA),
+        title: const Text('Upcoming Matches'),
+      ),
+      body: content,
       floatingActionButton: ScaleTransition(
         scale: Tween(begin: 0.9, end: 1.1).animate(
           CurvedAnimation(parent: _fabController, curve: Curves.easeInOut),
