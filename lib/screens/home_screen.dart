@@ -24,8 +24,8 @@ class _HomeScreenState extends State<HomeScreen> {
         status: _status,
         onStatusChanged: (val) => setState(() => _status = val),
       ),
-      _LeaguesTab(user: widget.user),
-      UpcomingMatchesScreen(user: widget.user),
+      _YourGamesTab(user: widget.user),
+      UpcomingMatchesScreen(user: widget.user, showOnlyOthers: true),
     ];
 
     return Scaffold(
@@ -35,8 +35,10 @@ class _HomeScreenState extends State<HomeScreen> {
         onTap: (index) => setState(() => _selectedIndex = index),
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.emoji_events), label: 'Leagues'),
-          BottomNavigationBarItem(icon: Icon(Icons.sports_soccer), label: 'Games'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.event_available), label: 'Your Games'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.sports_soccer), label: 'Other Games'),
         ],
       ),
     );
@@ -118,9 +120,9 @@ class _WelcomeTab extends StatelessWidget {
   }
 }
 
-class _LeaguesTab extends StatelessWidget {
+class _YourGamesTab extends StatelessWidget {
   final User user;
-  const _LeaguesTab({required this.user});
+  const _YourGamesTab({required this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -133,13 +135,13 @@ class _LeaguesTab extends StatelessWidget {
 
     if (display.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Your Leagues')),
-        body: const Center(child: Text('No leagues yet')),
+        appBar: AppBar(title: const Text('Your Games')),
+        body: const Center(child: Text('No games yet')),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Your Leagues')),
+      appBar: AppBar(title: const Text('Your Games')),
       body: ListView(
         children: [
           for (final m in display)
