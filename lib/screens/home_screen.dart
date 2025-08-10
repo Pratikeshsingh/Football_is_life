@@ -177,9 +177,9 @@ class _LoggedOutScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      appBar: AppBar(title: Text('Signed out')),
-      body: Center(child: Text('You have been logged out.')),
+    return Scaffold(
+      appBar: AppBar(title: const Text('Signed out')),
+      body: const Center(child: Text('You have been logged out.')),
     );
   }
 }
