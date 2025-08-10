@@ -36,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _YourGamesTab(user: widget.user),
       UpcomingMatchesScreen(
           user: widget.user, showOnlyOthers: true, embed: true),
+      UpcomingMatchesScreen(user: widget.user, showOnlyOthers: true),
     ];
     final titles = ['Home', 'Your Games', 'Other Games'];
 
@@ -155,6 +156,10 @@ class _YourGamesTab extends StatelessWidget {
 
     if (display.isEmpty) {
       return const Center(child: Text('No games yet'));
+      return Scaffold(
+        appBar: AppBar(title: const Text('Your Games')),
+        body: const Center(child: Text('No games yet')),
+      );
     }
 
     return ListView(
@@ -179,6 +184,18 @@ class _LoggedOutScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Signed out')),
       body: const Center(child: Text('You have been logged out.')),
+      appBar: AppBar(title: const Text('Your Games')),
+      body: ListView(
+        children: [
+          for (final m in display)
+            ListTile(
+              leading: const Icon(Icons.sports_soccer),
+              title: Text(m.title),
+              subtitle: Text(
+                  '${m.date.year.toString().padLeft(4, '0')}-${m.date.month.toString().padLeft(2, '0')}-${m.date.day.toString().padLeft(2, '0')} @ ${m.location}'),
+            ),
+        ],
+      ),
     );
   }
 }

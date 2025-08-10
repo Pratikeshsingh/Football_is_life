@@ -410,6 +410,32 @@ class _UpcomingMatchesScreenState extends State<UpcomingMatchesScreen>
     children.addAll(buildSection('Later', later));
     children.add(const SizedBox(height: 80));
 
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF87CEFA),
+        title: const Text('Upcoming Matches'),
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: NetworkImage('https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?auto=format&fit=crop&w=800&q=80'),
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(Colors.black38, BlendMode.darken),
+          ),
+        ),
+        child: ListView(children: children),
+      ),
+    ];
+
+    if (!widget.showOnlyOthers) {
+      children.addAll(buildSection('Your Games', myMatches));
+    }
+
+    children.addAll(buildSection('This Week', thisWeek));
+    children.addAll(buildSection('This Month', thisMonth));
+    children.addAll(buildSection('Later', later));
+    children.add(const SizedBox(height: 80));
+
     final content = Container(
       decoration: const BoxDecoration(
         image: DecorationImage(
