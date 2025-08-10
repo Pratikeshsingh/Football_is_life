@@ -20,10 +20,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       title: 'Football Is Life',
-      home: AuthGate(),
+      // home: AuthGate(), // Login temporarily disabled
+      home: HomeScreen(),
     );
   }
 }
+
+/*
+// Authentication and OTP login temporarily disabled.
 
 class AuthGate extends StatefulWidget {
   const AuthGate({super.key});
@@ -221,6 +225,7 @@ class _OTPSignInScreenState extends State<OTPSignInScreen> {
     );
   }
 }
+*/
 
 class PhoneCaptureScreen extends StatefulWidget {
   const PhoneCaptureScreen({super.key});
