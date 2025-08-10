@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 
 import '../models/user.dart';
 import '../models/match.dart';
@@ -156,10 +156,6 @@ class _YourGamesTab extends StatelessWidget {
 
     if (display.isEmpty) {
       return const Center(child: Text('No games yet'));
-      return Scaffold(
-        appBar: AppBar(title: const Text('Your Games')),
-        body: const Center(child: Text('No games yet')),
-      );
     }
 
     return ListView(
@@ -181,21 +177,9 @@ class _LoggedOutScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Signed out')),
-      body: const Center(child: Text('You have been logged out.')),
-      appBar: AppBar(title: const Text('Your Games')),
-      body: ListView(
-        children: [
-          for (final m in display)
-            ListTile(
-              leading: const Icon(Icons.sports_soccer),
-              title: Text(m.title),
-              subtitle: Text(
-                  '${m.date.year.toString().padLeft(4, '0')}-${m.date.month.toString().padLeft(2, '0')}-${m.date.day.toString().padLeft(2, '0')} @ ${m.location}'),
-            ),
-        ],
-      ),
+    return const Scaffold(
+      appBar: AppBar(title: Text('Signed out')),
+      body: Center(child: Text('You have been logged out.')),
     );
   }
 }
